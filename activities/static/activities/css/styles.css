@@ -1,0 +1,39 @@
+.slider {
+    position: relative;
+    max-width: 600px; /* Максимальная ширина слайдера */
+    margin: auto; /* Центрирование слайдера */
+    overflow: hidden; /* Скрытие лишних элементов */
+    border: 1px solid #ccc; /* Обводка слайдера */
+    border-radius: 8px; /* Закругленные углы */
+}
+
+.slides {
+    display: flex;
+    transition: transform 0.5s ease;
+}
+
+.slide {
+    min-width: 100%; /* Каждый слайд занимает 100% ширины слайдера */
+    padding: 20px; /* Внутренние отступы */
+    box-sizing: border-box; /* Включение отступов в общую ширину */
+}
+
+.prev, .next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(255, 255, 255, 0.8);
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    z-index: 10;
+    border-radius: 5px; /* Закругленные углы для кнопок */
+}
+
+.prev {
+    left: 10px;
+}
+
+.next {
+    right: 10px;
+}

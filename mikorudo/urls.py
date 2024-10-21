@@ -19,7 +19,10 @@ from django.urls import path, include
 from mikorudo import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('', views.index, name='index'),
+    path('about/', views.about, name='about'),
+    path('feedback/', views.feedback, name='feedback'),
+    path('admin/', admin.site.urls, name = 'admin'),
     path('elib/', include('elib.urls')),
     path('activities/', include('activities.urls'))
 ]

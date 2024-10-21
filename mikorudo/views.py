@@ -1,6 +1,26 @@
 from django.http import HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseServerError
+from django.shortcuts import render
 
 
+def index(request):
+    data = {
+        'title': 'Главная страница'
+    }
+    return render(request, 'index.html', data)
+
+def feedback(request):
+    data = {
+        'title': 'Обратная связь'
+    }
+    return render(request, 'feedback.html', data)
+
+def about(request):
+    data = {
+        'title': 'О сайте'
+    }
+    return render(request, 'about.html', data)
+
+#Обработчики исключений
 def page_not_found(request, exception):
     return HttpResponseNotFound('<h1>Запрашиваемая странице не найдена</h1>')
 

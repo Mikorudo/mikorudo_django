@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load activities_tags %}
+
+{% block content %}
+{% get_upcoming_activities 10 %}
+
+<article>
+  <h2><strong>{{ activity.title }}</strong></h2>
+  <p><em>Описание: {{ activity.description }}</em></p>
+  <p>Дата: {{ activity.date }}</p>
+  <p>Время: {{ activity.time }}</p>
+  <p>Место проведения: {{ activity.location }}</p>
+  <p>Категории: {{ activity.categories.all|join:", " }}</p>
+  <p>Длительность: {{ activity.duration }}</p>
+  <p>Контакт для связи: {{ activity.contact }}</p>
+</article>
+{% endblock %}
+

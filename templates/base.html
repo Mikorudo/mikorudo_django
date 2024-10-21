@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>{{title}}</title>
+  {% load static %}
+  <link type="text/css" href="{% static 'css/styles.css' %}" rel="stylesheet" />
+</head>
+<body>
+  <div class="gradient-background">
+    <div class="content-background">
+      {% include 'menu.html' %}
+      {% block content %}
+      {% endblock %}
+    </div>
+  </div>
+</body>
+</html>
