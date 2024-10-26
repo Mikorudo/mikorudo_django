@@ -7,7 +7,7 @@
     <div class="slides">
         {% for activity in activities %}
             <div class="slide">
-                <strong><a href="{% url 'activity_by_id' activity.id %}">{{ activity.title }}</a></strong><br>
+                <strong><a href="{{ activity.get_absolute_url }}">{{ activity.title }}</a></strong><br>
                 <p><em>Дата: {{ activity.date }}</em></p>
                 <p>Время: {{ activity.time }}</p>
                 <p>Краткое описание: {{ activity.description }}</p>

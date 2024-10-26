@@ -1,56 +1,74 @@
-from django.shortcuts import render, get_object_or_404
-from datetime import datetime
+from datetime import timedelta
 
-# Заглушка для мероприятий
-activities = [
-    {
-        'id': 0,
-        'title': 'Python Workshop',
-        'description': 'A workshop on Python programming basics.',
-        'date': '2024-11-01',
-        'time': '10:00',
-        'location': 'Tech Hub, Room 101',
-        'categories': ['Programming', 'Workshops'],
-        'duration': '2 hours',
-        'contact': 'python@techhub.com',
-    },
-    {
-        'id': 1,
-        'title': 'Data Science Meetup',
-        'description': 'Discussion about trends in Data Science.',
-        'date': '2024-11-05',
-        'time': '15:00',
-        'location': 'Main Hall, Tech Center',
-        'categories': ['Data Science', 'Meetups'],
-        'duration': '3 hours',
-        'contact': 'datascience@techcenter.com',
-    },
-    {
-        'id': 2,
-        'title': 'AI in Healthcare',
-        'description': 'Exploring the use of AI in the medical field.',
-        'date': '2024-11-10',
-        'time': '13:00',
-        'location': 'Health Center, Room 202',
-        'categories': ['AI', 'Healthcare'],
-        'duration': '4 hours',
-        'contact': 'aihealth@healthcenter.com',
-    },
-]
+from django.core.exceptions import ValidationError
+from django.shortcuts import render, get_object_or_404
+from activities.models import Activities
+from django.utils.text import slugify
+from unidecode import unidecode
+
 
 def index(request):
-    return render(request, 'activities/activities_list.html', {'activities': activities[:20]})
+    activities = Activities.objects.all()
+    return render(request, 'activities/activities_list.html', {'activities': activities})
 
-def activity_by_id(request, id):
-    activity = next((act for act in activities if act['id'] == id), None)
-    if activity is None:
-        return render(request, '404.html', status=404)
+def activity_by_id(request, activity_id):
+    activity = get_object_or_404(Activities, pk=activity_id)
+    return render(request, 'activities/activity.html', {'activity': activity})
+
+def activity_by_slug(request, activity_slug):
+    activity = get_object_or_404(Activities, slug=activity_slug)
     return render(request, 'activities/activity.html', {'activity': activity})
 
 def archive(request, year, month):
-    filtered_activities = [
-        act for act in activities
-        if datetime.strptime(act['date'], '%Y-%m-%d').year == year and
-           datetime.strptime(act['date'], '%Y-%m-%d').month == month
-    ]
-    return render(request, 'activities/archive.html', {'activities': filtered_activities, 'year': year, 'month': month})
+    activities = Activities.archived.filter(date__year=year, date__month=month)
+    return render(request, 'activities/activities_list.html', {'activities': activities, 'year': year, 'month': month})
+
+def create_activity(title, description, date, time, category, duration, contact):
+    if category not in Activities.Category.values:
+        raise ValidationError(f"Категория '{category}' не существует")
+
+    slug = slugify(unidecode(title))
+
+    unique_slug = slug
+    counter = 1
+    while Activities.objects.filter(slug=unique_slug).exists():
+        unique_slug = f"{slug}-{counter}"
+        counter += 1
+
+    activity = Activities.objects.create(
+        title=title,
+        description=description,
+        date=date,
+        time=time,
+        category=category,
+        duration=timedelta(minutes=duration),
+        contact=contact,
+        slug=unique_slug
+    )
+    return activity
+
+def update_activity(activity_id, **kwargs):
+    activity = get_object_or_404(Activities, pk=activity_id)
+
+    if 'category' in kwargs and kwargs['category'] not in Activities.Category.values:
+        raise ValidationError(f"Категория '{kwargs['category']}' не существует")
+
+    for key, value in kwargs.items():
+        if hasattr(activity, key):
+            setattr(activity, key, value)
+
+    if 'title' in kwargs:
+        slug = slugify(unidecode(kwargs['title']))
+        unique_slug = slug
+        counter = 1
+        while Activities.objects.filter(slug=unique_slug).exclude(id=activity_id).exists():
+            unique_slug = f"{slug}-{counter}"
+            counter += 1
+        activity.slug = unique_slug
+
+    activity.save()
+    return activity
+
+def delete_activity(activity_id):
+        activity = get_object_or_404(Activities, pk=activity_id)
+        activity.delete()

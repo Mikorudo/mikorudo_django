@@ -3,7 +3,7 @@
 <ul>
   {% for b in books %}
     <li {% if forloop.last %}class="last"{% endif %}>
-      <strong><a href="{% url 'book_detail' b.id %}">{{ b.title }}</a></strong><br>
+      <strong><a href="{{ b.get_absolute_url }}">{{ b.title }}</a></strong><br>
       <em>Автор: {{ b.author }}</em><br>
       <span>Жанры: {{ b.genres.all|join:", " }}</span><br>
       <span>Год публикации: {{ b.publication_year }}</span>

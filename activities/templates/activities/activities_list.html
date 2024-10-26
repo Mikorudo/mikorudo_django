@@ -7,7 +7,7 @@
 <ul>
   {% for activity in activities %}
     <li {% if forloop.last %}class="last"{% endif %}>
-      <strong><a href="{% url 'activity_by_id' activity.id %}">{{ activity.title }}</a></strong><br>
+      <strong><a href="{{ activity.get_absolute_url }}">{{ activity.title }}</a></strong><br>
       <em>Дата: {{ activity.date }}</em><br>
       <span>Время: {{ activity.time }}</span>
       <p>Краткое описание: {{ activity.description }}</p>

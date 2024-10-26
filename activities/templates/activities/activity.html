@@ -9,8 +9,7 @@
   <p><em>Описание: {{ activity.description }}</em></p>
   <p>Дата: {{ activity.date }}</p>
   <p>Время: {{ activity.time }}</p>
-  <p>Место проведения: {{ activity.location }}</p>
-  <p>Категории: {{ activity.categories.all|join:", " }}</p>
+  <p>Категория: {{ activity.get_category_display }}</p>
   <p>Длительность: {{ activity.duration }}</p>
   <p>Контакт для связи: {{ activity.contact }}</p>
 </article>
