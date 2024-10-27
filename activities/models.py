@@ -12,28 +12,15 @@ class UpcomingManager(models.Manager):
         return super().get_queryset().filter(date__gte=timezone.now().date())
 
 class Activities(models.Model):
-    class Category(models.TextChoices):
-        LITERARY_EVENT = 'Literary', 'Литературное мероприятие'
-        WORKSHOP = 'Workshop', 'Мастер-класс'
-        BOOK_CLUB = 'BookClub', 'Книжный клуб'
-        AUTHOR_VISIT = 'AuthorVisit', 'Встреча с автором'
-        CHILDREN_EVENT = 'ChildrenEvent', 'Мероприятие для детей'
-        LECTURE = 'Lecture', 'Лекция'
-        EXHIBITION = 'Exhibition', 'Выставка'
-        DISCUSSION = 'Discussion', 'Обсуждение'
-
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     date = models.DateField()
     time = models.TimeField()
-    category = models.CharField(
-        max_length=63,
-        choices=Category.choices,
-        default=Category.LITERARY_EVENT,
-    )
+    category = models.ForeignKey('Categories', on_delete=models.PROTECT)
     duration = models.DurationField()
     contact = models.EmailField()
     slug = models.SlugField(max_length=255, unique=True, blank=True)
+    view_count = models.PositiveIntegerField(default=0)
 
     objects = models.Manager()
     archived = ArchivedManager()
@@ -48,3 +35,14 @@ class Activities(models.Model):
     def get_absolute_url(self):
         return reverse('activity_by_slug', kwargs={'activity_slug':
                                            self.slug})
+
+class Categories(models.Model):
+    name = models.CharField(max_length=100,
+                            db_index=True)
+    slug = models.SlugField(max_length=255,
+                            unique=True, db_index=True)
+
+    objects = models.Manager()
+
+    def __str__(self):
+        return self.name

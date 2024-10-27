@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load activities_tags %}
+{% load static %}
 
 {% block content %}
 {% get_upcoming_activities 10 %}
@@ -9,9 +10,20 @@
   <p><em>Описание: {{ activity.description }}</em></p>
   <p>Дата: {{ activity.date }}</p>
   <p>Время: {{ activity.time }}</p>
-  <p>Категория: {{ activity.get_category_display }}</p>
+  <p>Категория: {{ activity.category }}</p>
   <p>Длительность: {{ activity.duration }}</p>
   <p>Контакт для связи: {{ activity.contact }}</p>
 </article>
+
+<div class="navigation-buttons">
+  {% with prev_activity=activity.get_previous_by_date next_activity=activity.get_next_by_date %}
+    {% if prev_activity %}
+      <a href="{{ prev_activity.get_absolute_url }}" class="nav-button">Предыдущее мероприятие</a>
+    {% endif %}
+    {% if next_activity %}
+      <a href="{{ next_activity.get_absolute_url }}" class="nav-button">Следующее мероприятие</a>
+    {% endif %}
+  {% endwith %}
+</div>
 {% endblock %}
 

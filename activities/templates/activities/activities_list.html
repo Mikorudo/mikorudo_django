@@ -3,6 +3,7 @@
 
 {% block content %}
 {% get_upcoming_activities 10 %}
+{% get_activity_categories %}
 
 <ul>
   {% for activity in activities %}
@@ -11,6 +12,11 @@
       <em>Дата: {{ activity.date }}</em><br>
       <span>Время: {{ activity.time }}</span>
       <p>Краткое описание: {{ activity.description }}</p>
+
+      {% if activity.passed %}
+        <p style="color: gray;">Мероприятие завершено!</p>
+      {% endif %}
+
     </li>
   {% endfor %}
 </ul>

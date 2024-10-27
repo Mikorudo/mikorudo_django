@@ -1,0 +1,8 @@
+{% load static %}
+<div class="items-list">
+    {% for genre in books_genres %}
+        <a href="{% url 'books_by_genre' genre.slug %}" class="item-link">
+            {{ genre.name }}
+        </a>
+    {% endfor %}
+</div>

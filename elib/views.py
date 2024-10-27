@@ -1,27 +1,37 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.text import slugify
+from django.db.models.functions import Length
 from unidecode import unidecode
-from django.core.exceptions import ValidationError
 
 
-from elib.models import Books
+from elib.models import Books, Genres
+
 
 def index(request):
     return redirect('book_search', permanent=True)
 
-def get_book_by_id(request, book_id):
+
+def book_by_id(request, book_id):
     book = get_object_or_404(Books, pk=book_id)
     return render(request, 'elib/book.html', {'book': book})
 
-def get_book_by_slug(request, book_slug):
+
+def book_by_slug(request, book_slug):
     book = get_object_or_404(Books, slug=book_slug)
     return render(request, 'elib/book.html', {'book': book})
+
+
+def books_by_genre(request, genre_slug):
+    books = Books.objects.filter(genres__slug=genre_slug).annotate(description_lengh = Length('short_description'))
+    latest_book = Books.objects.latest('created_at')
+    return render(request, 'elib/book_list.html', {'books': books, 'latest_book': latest_book})
+
 
 def search_books(request):
     year = request.GET.get('year')
     title = request.GET.get('title')
     author = request.GET.get('author')
-    genre = request.GET.get('genre')
+    genre_slug = request.GET.get('genre_slug')
 
     books = Books.objects.all()
 
@@ -31,17 +41,18 @@ def search_books(request):
     if author:
         books = books.filter(author__icontains=author)
 
-    if genre:
-        books = books.filter(genre=genre)
+    if genre_slug:
+        books = books.filter(genres__slug=genre_slug)
 
     if year:
         books = books.filter(publication_year=year)
 
-    return render(request, 'elib/book_list.html', {'books': books})
+    books = books.annotate(description_length = Length('short_description'))
+    latest_book = Books.objects.latest('created_at')
+    return render(request, 'elib/book_list.html', {'books': books, 'latest_book': latest_book})
+
 
 def create_book(title, author, publication_year, short_description, isbn, page_count, genre):
-    if genre not in Books.Genre.values:
-        raise ValidationError(f"Категория '{genre}' не существует")
     slug = slugify(unidecode(f"{title} {author}"))
 
     unique_slug = slug
@@ -64,9 +75,6 @@ def create_book(title, author, publication_year, short_description, isbn, page_c
 
 def update_book(book_id, **kwargs):
     book = get_object_or_404(Books, pk=book_id)
-
-    if 'genre' in kwargs and kwargs['genre'] not in Books.Genre.values:
-        raise ValidationError(f"Жанр '{kwargs['genre']}' не существует")
 
     for key, value in kwargs.items():
         if hasattr(book, key):

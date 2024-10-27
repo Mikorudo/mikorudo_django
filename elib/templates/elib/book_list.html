@@ -1,12 +1,27 @@
 {% extends 'base.html' %}
+{% load elib_tags %}
+{% load static %}
+
 {% block content %}
+{% get_books_genres %}
+
 <ul>
   {% for b in books %}
     <li {% if forloop.last %}class="last"{% endif %}>
+      {% if b == latest_book %}
+        <strong style="color: red;">Новое!</strong>
+      {% endif %}
       <strong><a href="{{ b.get_absolute_url }}">{{ b.title }}</a></strong><br>
       <em>Автор: {{ b.author }}</em><br>
       <span>Жанры: {{ b.genres.all|join:", " }}</span><br>
       <span>Год публикации: {{ b.publication_year }}</span>
+      <p>
+        Краткая информация:
+        {% if b.description_length %}
+          ({{ b.description_length }} симв.):
+        {% endif %}
+        {{ b.short_description }}
+      </p>
     </li>
   {% endfor %}
 </ul>

@@ -1,0 +1,8 @@
+{% load static %}
+<div class="items-list">
+    {% for category in activity_categories %}
+        <a href="{% url 'activities_by_category' category.slug %}" class="item-link">
+            {{ category.name }} ({{ category.activity_count }})
+        </a>
+    {% endfor %}
+</div>
