@@ -1,5 +1,7 @@
 from django.urls import path
 from elib import views
+from django.contrib import admin
+
 
 urlpatterns = [
     path('', views.index, name='elib_index'),
@@ -8,3 +10,7 @@ urlpatterns = [
     path('books/<slug:genre_slug>/', views.books_by_genre, name='books_by_genre'),
     path('books/', views.search_books, name='book_search'),
 ]
+
+
+admin.site.site_header = "Панель администрирования"
+admin.site.index_title = "Мероприятия библиотеки"
