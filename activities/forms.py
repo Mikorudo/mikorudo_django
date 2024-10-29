@@ -23,7 +23,7 @@ class AddActivitiesForm(forms.ModelForm):
         duration_in_minutes = self.cleaned_data['duration']
         duration_in_seconds = duration_in_minutes * 60
 
-        if duration_in_minutes < timedelta(minutes=30):
+        if duration_in_seconds < timedelta(minutes=30):
             raise ValidationError("Нельзя создать мероприятие меньше 30 минут")
 
         return duration_in_seconds

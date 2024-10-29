@@ -1,92 +1,79 @@
-from datetime import timedelta
-
-from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse_lazy
+from django.views.generic import TemplateView, DetailView, ListView, CreateView, UpdateView, DeleteView
 
 from activities.forms import AddActivitiesForm
 from activities.models import Activities
-from django.utils.text import slugify
-from unidecode import unidecode
-from django.db.models import Q, F, Value
+from django.db.models import Q, Value
 
+from activities.utils import DataMixin
 
-def index(request):
-    activities = Activities.objects.all()
-    return render(request, 'activities/activities_list.html', {'activities': activities, 'title':'Мероприятия'})
+class HomeActivityView(DataMixin, ListView):
+    model = Activities
+    template_name = 'activities/activities_list.html'
+    context_object_name = 'activities'
+    def get_context_data(self,**kwargs):
+        context = super().get_context_data(**kwargs)
+        return self.get_mixin_context(context,
+                               title = 'Мероприятия библиотеки',
+                               selected_category = 0)
 
-def activity_by_id(request, activity_id):
-    activity = get_object_or_404(Activities, pk=activity_id)
-    activity.view_count = F('view_count') + 1
-    activity.save()
-    return render(request, 'activities/activity.html', {'activity': activity, 'title':'Мероприятие'})
+class ActivityDetail(DataMixin, DetailView):
+    model = Activities
+    template_name = 'activities/activity.html'
+    slug_url_kwarg = 'activity_slug'
+    pk_url_kwarg = 'activity_id'
+    context_object_name = 'activity'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return self.get_mixin_context(context,
+                                      title=context['activity'],)
 
-def activity_by_slug(request, activity_slug):
-    activity = get_object_or_404(Activities, slug=activity_slug)
-    activity.view_count = F('view_count') + 1
-    activity.save()
-    return render(request, 'activities/activity.html', {'activity': activity, 'title':'Мероприятие'})
+class ActivityCategory(DataMixin, ListView):
+    template_name = 'activities/activities_list.html'
+    context_object_name = 'activities'
+    allow_empty = True
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        cat = context['activities'][0].category
+        return self.get_mixin_context(context,
+                                        title= 'Категория - ' + cat.name,
+                                        selected_category = cat.id)
+    def get_queryset(self):
+        return Activities.objects.all().filter(category__slug=self.kwargs['category_slug'])
 
-def activities_by_category(request, category_slug):
-    activities = Activities.objects.order_by().filter(category__slug=category_slug)
-    return render(request, 'activities/activities_list.html', {'activities': activities, 'title':'Мероприятия по категориям'})
+class AddActivity(DataMixin, CreateView):
+    form_class = AddActivitiesForm
+    template_name = 'activities/add_activity.html'
+    success_url = reverse_lazy('activities_index')
+    title_page = 'Добавление мероприятия'
 
-def archive(request, year, month):
-    activities = Activities.archived.filter(Q(date__year=year) & Q(date__month=month)).annotate(passed = Value(True))
-    return render(request, 'activities/activities_list.html',
-                  {'activities': activities, 'year': year, 'month': month, 'title':'Архив'})
+class UpdateActivity(DataMixin, UpdateView):
+    model = Activities
+    fields = ['title', 'description', 'category', 'time', 'duration', 'contact']
+    template_name = 'activities/add_activity.html'
+    success_url = reverse_lazy('activities_index')
+    title_page = 'Обновление мероприятия'
 
-def create_activity(title, description, date, time, category, duration, contact):
-    slug = slugify(unidecode(title))
+class DeleteActivity(DataMixin, DeleteView):
+    model = Activities
+    success_url = reverse_lazy('activities_index')
+    template_name = 'activities/delete_activity.html'
+    title_page = 'Удаление мероприятия'
 
-    unique_slug = slug
-    counter = 1
-    while Activities.objects.filter(slug=unique_slug).exists():
-        unique_slug = f"{slug}-{counter}"
-        counter += 1
-
-    activity = Activities.objects.create(
-        title=title,
-        description=description,
-        date=date,
-        time=time,
-        category=category,
-        duration=timedelta(minutes=duration),
-        contact=contact,
-        slug=unique_slug
-    )
-    return activity
-
-def update_activity(activity_id, **kwargs):
-    activity = get_object_or_404(Activities, pk=activity_id)
-
-    for key, value in kwargs.items():
-        if hasattr(activity, key):
-            setattr(activity, key, value)
-
-    if 'title' in kwargs:
-        slug = slugify(unidecode(kwargs['title']))
-        unique_slug = slug
-        counter = 1
-        while Activities.objects.filter(slug=unique_slug).exclude(id=activity_id).exists():
-            unique_slug = f"{slug}-{counter}"
-            counter += 1
-        activity.slug = unique_slug
-
-    activity.save()
-    return activity
-
-def delete_activity(activity_id):
-        activity = get_object_or_404(Activities, pk=activity_id)
-        activity.delete()
-
-def add_activity(request):
-    if request.method == 'POST':
-        form = AddActivitiesForm(request.POST)
-        if form.is_valid():
-            try:
-                form.save()
-                return redirect('activities_index')
-            except:
-                form.add_error(None, 'Ошибка добавления')
-    else:
-        form = AddActivitiesForm()
-    return render(request, 'activities/add_activity.html', context={'form': form, 'title': 'Добавление нового мероприятия'})
+class ActivityArchive(DataMixin, ListView):
+    template_name = 'activities/activities_list.html'
+    context_object_name = 'activities'
+    allow_empty = True
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        year = self.kwargs['year']
+        month = self.kwargs['month']
+        return self.get_mixin_context(context,
+                                      title = f'Архив на {year}/{month}',
+                                      year = year,
+                                      month = month,
+                                      selected_category = 0)
+    def get_queryset(self):
+        year = self.kwargs['year']
+        month = self.kwargs['month']
+        return Activities.objects.all().filter(Q(date__year=year) & Q(date__month=month)).annotate(passed = Value(True))
