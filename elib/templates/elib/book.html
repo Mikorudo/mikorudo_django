@@ -8,6 +8,9 @@
   <p>Краткая информация: {{ book.short_description }}</p>
   <p>ISBN: {{ book.isbn }}</p>
   <p>Количество страниц: {{ book.page_count }}</p>
+  {% if book.photo %}
+  <img class="img-article-left" src="{{book.photo.url}}"></p>
+  {% endif %}
 </article>
 
 <div class="navigation-buttons">

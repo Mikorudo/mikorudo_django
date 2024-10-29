@@ -1,3 +1,5 @@
+import uuid
+
 from django.urls import reverse
 from django.db import models
 from django.utils.text import slugify
@@ -16,6 +18,9 @@ class Books(models.Model):
     slug = models.SlugField(max_length=255, db_index=True,
                             unique=True)
     genres = models.ManyToManyField('Genres', blank=True, related_name='genres', verbose_name='Жанры')
+    photo = models.ImageField(upload_to="photos/%Y/%m/%d/",
+        default=None, blank=True, null=True,
+        verbose_name="Фото")
 
     objects = models.Manager()
 
@@ -93,4 +98,22 @@ class ISBN(models.Model):
         slug = slugify(unidecode(self.__str__()))
 
         self.slug = slug
+        super().save(*args, **kwargs)
+
+class UploadFiles(models.Model):
+    file = models.FileField(upload_to='uploads_model')
+    objects = models.Manager()
+
+    def __str__(self):
+        return self.file.name
+
+    def save(self, *args, **kwargs):
+        name = self.file.name
+        ext = ''
+        if '.' in name:
+            ext = name[name.rindex('.'):]
+        name = name[:name.rindex('.')]
+        suffix = str(uuid.uuid4())
+        new_name = f'{name}_{suffix}{ext}'
+        self.file.name = new_name
         super().save(*args, **kwargs)

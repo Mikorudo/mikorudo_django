@@ -1,10 +1,11 @@
 from django.contrib import admin
+from django.utils.safestring import mark_safe
 
 from elib.models import Books, Genres, ISBN
 
 @admin.register(Books)
 class BooksAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'author', 'isbn', 'page_count', 'created_at', 'updated_at', 'updated', 'description_length')
+    list_display = ('id', 'title', 'author', 'isbn', 'page_count', 'book_photo', 'created_at', 'updated_at', 'updated', 'description_length')
     list_display_links = ('id', 'title')
     list_per_page = 5
     ordering = ('updated_at',)
@@ -12,11 +13,17 @@ class BooksAdmin(admin.ModelAdmin):
     search_fields = ('title__startswith', 'author', 'isbn__isbn_number')
     list_filter = ('page_count', 'genres')
     exclude = ['created_at', 'updated_at']
-    readonly_fields = ['slug']
+    readonly_fields = ['slug', 'book_photo']
 
     @admin.display(description='Страница отредактирована')
-    def updated(self, book:Books):
+    def updated(self, book: Books):
         return book.updated_at != book.created_at
+
+    @admin.display(description='Изображение')
+    def book_photo(self, book:Books):
+        if book.photo:
+            return mark_safe(f"<img src='{book.photo.url}' width=50>")
+        return "Нет фото"
 
     @admin.display(description='Размер описания')
     def description_length(self, book:Books):

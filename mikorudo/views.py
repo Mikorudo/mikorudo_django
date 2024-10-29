@@ -1,6 +1,9 @@
 from django.http import HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseServerError
 from django.shortcuts import render
 
+from elib.models import UploadFiles
+from .forms import UploadFileForm
+
 
 def index(request):
     data = {
@@ -15,10 +18,14 @@ def feedback(request):
     return render(request, 'feedback.html', data)
 
 def about(request):
-    data = {
-        'title': 'О сайте'
-    }
-    return render(request, 'about.html', data)
+    if request.method == "POST":
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            fp = UploadFiles(file=form.cleaned_data['file'])
+            fp.save()
+    else:
+        form = UploadFileForm()
+    return render(request, 'about.html', context = {'title': 'О сайте', 'form': form})
 
 #Обработчики исключений
 def page_not_found(request, exception):
