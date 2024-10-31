@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.db.models.functions import Length
@@ -7,7 +8,7 @@ from django.views.generic import TemplateView, ListView, DetailView, FormView
 from elib.forms import AddBookForm
 from elib.models import Books
 
-class HomeElibView(TemplateView):
+class HomeElibView(LoginRequiredMixin, TemplateView):
     template_name = 'elib/book_search'
 
     def get_context_data(self, **kwargs):
@@ -17,7 +18,7 @@ class HomeElibView(TemplateView):
         context['latest_book'] = Books.objects.latest('created_at')
         return context
 
-class BooksList(ListView):
+class BooksList(LoginRequiredMixin, ListView):
     model = Books
     template_name = 'elib/book_list.html'
     context_object_name = 'books'
@@ -26,7 +27,7 @@ class BooksList(ListView):
         'latest_book': Books.objects.latest('created_at'),
     }
 
-class BooksGenre(ListView):
+class BooksGenre(LoginRequiredMixin, ListView):
     template_name = 'elib/book_list.html'
     context_object_name = 'books'
     allow_empty = True
@@ -38,7 +39,7 @@ class BooksGenre(ListView):
     def get_queryset(self):
         return Books.objects.all().filter(genres__slug=self.kwargs['genre_slug']).annotate(description_lengh = Length('short_description'))
 
-class VIEW_AddBook(View):
+class VIEW_AddBook(LoginRequiredMixin, View):
     def get(self, request):
         form = AddBookForm()
         return render(request, 'elib/add_book.html', context={'form': form, 'title': 'Добавление новой книги'})
@@ -62,24 +63,27 @@ class VIEW_AddBook(View):
                 form.add_error(None, 'Ошибка добавления')
             return render(request, 'elib/add_book.html', context={'form': form, 'title': 'Добавление новой книги'})
 
-class BookDetail(DetailView):
+class BookDetail(PermissionRequiredMixin, LoginRequiredMixin, DetailView):
     model = Books
     template_name = 'elib/book.html'
     slug_url_kwarg = 'book_slug'
     pk_url_kwarg = 'book_id'
     context_object_name = 'book'
+    permission_required = 'elib.view_books'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = context['book']
         return context
 
-class AddBook(FormView):
+class AddBook(PermissionRequiredMixin, LoginRequiredMixin, FormView):
     form_class = AddBookForm
     template_name = 'elib/add_book.html'
     success_url = reverse_lazy('elib_index')
     extra_context = {
         'title': 'Добавление книги'
     }
+    permission_required = 'elib.change_books'
     def form_valid(self, form):
         book = Books.objects.create(
             title=form.cleaned_data['title'],

@@ -29,7 +29,7 @@ class AddActivitiesForm(forms.ModelForm):
         return duration_in_seconds
 
     def clean_title(self):
-        ALLOWED_CHARS = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯабвгдеёжзийклмнопрстуфхцчшщбыъэюя0123456789 - "
+        ALLOWED_CHARS = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯабвгдеёжзийклмнопрстуфхцчшщьыъэюя0123456789 - "
         code = 'russian'
 
         title = self.cleaned_data['title']

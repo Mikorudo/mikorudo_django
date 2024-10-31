@@ -8,7 +8,7 @@ def menu_items(request):
         {'title':"О сайте", 'url_name':"about", 'priority':9},
     ]
 
-    full_menu = base_menu + get_elib_menu() + get_activities_menu()
+    full_menu = base_menu + get_elib_menu(request) + get_activities_menu(request)
     full_menu = sorted(full_menu, key=lambda item: item.get('priority', 0))
 
     return {

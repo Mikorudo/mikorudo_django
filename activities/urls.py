@@ -2,7 +2,6 @@ from django.urls import path
 from activities import views
 from django.contrib import admin
 
-
 urlpatterns = [
     path('', views.HomeActivityView.as_view(), name='activities_index'),
     path('by_id/<int:activity_id>/', views.ActivityDetail.as_view(), name='activity_by_id'),

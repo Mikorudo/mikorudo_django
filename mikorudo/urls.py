@@ -25,7 +25,8 @@ urlpatterns = [
     path('feedback/', views.feedback, name='feedback'),
     path('admin/', admin.site.urls, name = 'admin'),
     path('elib/', include('elib.urls')),
-    path('activities/', include('activities.urls'))
+    path('activities/', include('activities.urls')),
+    path('users/', include('users.urls', namespace='users'), )
 ]
 
 if settings.DEBUG:

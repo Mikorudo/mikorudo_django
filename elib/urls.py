@@ -2,7 +2,6 @@ from django.urls import path
 from elib import views
 from django.contrib import admin
 
-
 urlpatterns = [
     path('', views.HomeElibView.as_view(), name='elib_index'),
     path('book/<int:book_id>/', views.BookDetail.as_view(), name='book_detail_by_id'),

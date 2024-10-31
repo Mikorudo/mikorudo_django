@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 from django.db import models
@@ -24,6 +25,7 @@ class Activities(models.Model):
     contact = models.EmailField(verbose_name='Контакт')
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     view_count = models.PositiveIntegerField(default=0, verbose_name='Просмотрело')
+    author = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True, default=None)
 
     objects = models.Manager()
     archived = ArchivedManager()
@@ -67,7 +69,7 @@ class Categories(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        slug = slugify(unidecode(self.title))
+        slug = slugify(unidecode(self.name))
 
         self.slug = slug
         super().save(*args, **kwargs)
